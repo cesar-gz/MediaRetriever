@@ -1,4 +1,3 @@
-import os
 import subprocess
 
 while True:
@@ -10,10 +9,7 @@ while True:
 
     print("\nstarting download...\n")
     initiateDownload = subprocess.run(["python", "audioDownloader.py", userInput])
-    print("\n")
 
-    print("moving file...\n")
     moveFile = subprocess.run(
         ["python", "fileMover.py"]
     )
-    print("...file have been moved!\n")
