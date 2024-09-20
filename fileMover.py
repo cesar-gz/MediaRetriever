@@ -40,7 +40,7 @@ if closest_file:
     try:
         shutil.move(source_file, destination_file)
         # successfully moved file
-        #print(f"Moved {closest_file} to {destination_file}")
+        print(f"Moved {closest_file} to {destination_file}")
     except PermissionError:
         print(f"Permission error: Unable to move {closest_file}. Make sure the file is not open in another program.")
     except Exception as e:

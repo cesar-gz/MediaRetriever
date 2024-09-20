@@ -4,3 +4,5 @@ my-virtual-env/
 *.mp3
 .env
 __pycache__
+*.jpg
+*.png
