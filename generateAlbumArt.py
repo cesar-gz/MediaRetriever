@@ -1,4 +1,5 @@
 import os
+import random
 import requests
 import sharedVariables
 from dotenv import load_dotenv
@@ -23,6 +24,7 @@ def get_album_cover():
     except KeyError:
         return None
 
+
 def download_image(url, filename):
     response = requests.get(url)
     if response.status_code == 200:
@@ -30,7 +32,30 @@ def download_image(url, filename):
             f.write(response.content)
         print(f"Downloaded {filename}\n")
     else:
-        print("Failed to download image.")
+        print("Failed to download image. Requesting a random Pokemon for the cover.")
+        pokemonURL = get_random_pokemon()
+        pokemonImage = requests.get(pokemonURL)
+        with open(filename, 'wb') as f:
+            f.write(pokemonImage.content)
+            print(f"Downloaded Pokemon {filename}\n")
+
+
+
+def get_random_pokemon():
+    # Get a random Pokémon ID
+    pokemon_id = random.randint(1, 898)
+    url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_id}/'
+
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        image_url = data['sprites']['front_default']
+        return image_url
+    else:
+        return None
+
+
+
 
 
 cover_url = get_album_cover()
