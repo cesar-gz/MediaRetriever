@@ -3,3 +3,4 @@ my-virtual-env/
 *.mp4
 *.mp3
 .env
+__pycache__

@@ -10,7 +10,7 @@
 3) install requirements
 `pip install -r requirements.txt`
 
-4)
+4) run `python main.py`
 
 #### Resources:
 * https://github.com/JuanBindez/pytubefix
