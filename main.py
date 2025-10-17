@@ -15,4 +15,5 @@ while True:
 
     #glueArt = subprocess.run(["python", "attachArt.py"])
 
-    #moveFile = subprocess.run(["python", "fileMover.py"])
+    print("\nstarting file moving process...\n")
+    moveFile = subprocess.run(["python", "fileMover.py"])

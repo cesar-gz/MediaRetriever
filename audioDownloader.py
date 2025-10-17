@@ -2,7 +2,7 @@ import yt_dlp
 import os
 import sys
 import re
-
+import sharedVariables
 
 def clean_title(title):
     # Remove text in parentheses and brackets
@@ -11,7 +11,7 @@ def clean_title(title):
 
     # Remove common phrases
     phrases_to_remove = [
-        "Official Video", "Official Music Video", "Official Audio", "AMV", "Amv", 
+        "Official Video", "Official Music Video", "Official Audio", "AMV", "Amv",
         "Lyric Video", "Lyrics", "Audio", "HD", "HQ", "4K", "Club Mix",
         "Music Video", "Official Lyric Video", "[4K UPGRADE]", "[Official HD Music Video]"
     ]
@@ -23,6 +23,7 @@ def clean_title(title):
 
     # Capitalize first letter of each word
     title = title.title()
+    sharedVariables.set_video_title(title)
 
     return title
 
