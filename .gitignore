@@ -6,3 +6,5 @@ my-virtual-env/
 __pycache__
 *.jpg
 *.png
+.mp3
+.mp4
