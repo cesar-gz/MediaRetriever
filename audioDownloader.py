@@ -1,10 +1,8 @@
-import re
+import yt_dlp
 import os
-from pytubefix import YouTube
-from pytubefix.cli import on_progress
 import sys
-import sharedVariables
-import time
+import re
+
 
 def clean_title(title):
     # Remove text in parentheses and brackets
@@ -13,9 +11,9 @@ def clean_title(title):
 
     # Remove common phrases
     phrases_to_remove = [
-        "Official Video", "Official Music Video", "Official Audio",
+        "Official Video", "Official Music Video", "Official Audio", "AMV", "Amv", 
         "Lyric Video", "Lyrics", "Audio", "HD", "HQ", "4K", "Club Mix",
-        "Music Video" "Official Lyric Video"
+        "Music Video", "Official Lyric Video", "[4K UPGRADE]", "[Official HD Music Video]"
     ]
     for phrase in phrases_to_remove:
         title = title.replace(phrase, "")
@@ -28,31 +26,65 @@ def clean_title(title):
 
     return title
 
-url = sys.argv[1]
 
-yt = YouTube(url, on_progress_callback = on_progress)
 
-original_title = str(yt.title)
-cleaned_title = clean_title(original_title)
+# video_url = "https://www.youtube.com/watch?v=dZDa2u4Hor8"
 
-print(f"{cleaned_title}")
+video_url = sys.argv[1]
 
-sharedVariables.set_video_title(cleaned_title)
+output_directory = '.'
 
-ys = yt.streams.get_audio_only()
-download_path = os.getcwd()
-downloaded_file = ys.download(output_path=download_path, mp3=True)
+temp_filename_pattern = os.path.join(output_directory, '%(title)s_temp.%(ext)s')
 
-# Rename the file
-file_extension = os.path.splitext(downloaded_file)[1]
-new_filename = f"{cleaned_title}{file_extension}"
-new_filepath = os.path.join(download_path, new_filename)
+ydl_opts = {
+    'format': 'bestaudio/best',
+    'outtmpl': temp_filename_pattern,
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+    'quiet': True,
+    'no_warnings': True,
+}
+
+
 
 try:
-    os.rename(downloaded_file, new_filepath)
-    # File was successfully renamed
-    time.sleep(0.5)
-    print("\nDownload Finished.\n")
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # 1. Download the file with a temporary name (e.g., 'VideoTitle_temp.mp3')
+        info = ydl.extract_info(video_url, download=True)
+
+        # 2. Get the file's current path and the video's original title
+        original_title = info.get('title', 'unknown')
+
+        # After post-processing, the file path is usually stored in the
+        # 'requested_downloads' list. We take the path from the first item.
+        current_filepath = None
+        if info.get('requested_downloads'):
+            # This is the path after MP3 conversion is complete
+            current_filepath = info['requested_downloads'][0]['filepath']
+
+        if not current_filepath:
+            raise Exception("yt-dlp failed to return a valid file path.")
+
+        # 3. Apply your custom cleaning function
+        cleaned_title = clean_title(original_title)
+
+        # 4. Construct the new file path
+        base_dir = os.path.dirname(current_filepath)
+        new_filepath = os.path.join(base_dir, f"{cleaned_title}.mp3")
+
+        # 5. Rename the file
+        # We need to ensure the final file is actually the .mp3 file before renaming
+        # The 'current_filepath' should already be the .mp3 due to the postprocessor,
+        # but we add an extra check just in case.
+        if os.path.exists(current_filepath):
+             os.rename(current_filepath, new_filepath)
+             print(f"Download complete and renamed to: {cleaned_title}.mp3")
+        else:
+            print(f"Error: Temporary file not found at {current_filepath}")
+
+
 except Exception as e:
-    print(f"Error renaming file: {e}")
-    new_filepath = downloaded_file  # If renaming fails, use the original filename
+    print(f"An error occurred: {e}")

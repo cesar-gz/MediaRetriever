@@ -1,2 +1,1 @@
-pytubefix
-pythondot-env
+yt-dlp
