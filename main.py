@@ -3,7 +3,7 @@ import subprocess
 while True:
     userInput = input("\nEnter a Youtube video URL, remember to enter the URL with only the first URL query parameter in the link (type 'exit' to quit): ")
 
-    if userInput.lower() == 'exit':
+    if userInput.lower() in ['exit', 'quit', 'q', 'stop', 'bye', 'esc', 'escape', 'end']:
         print("\nExiting the program.\n")
         break
 
