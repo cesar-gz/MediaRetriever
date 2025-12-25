@@ -9,10 +9,11 @@ current_dir = os.getcwd()
 target_dir = os.getenv("TARGET_DIRECTORY")
 file_name = sharedVariables.get_video_title()
 
-# Ensure file_name is not empty
+"""
 if not file_name:
     print("Error: videoTitle.txt is empty. Make sure you've run the download script first.")
     exit(1)
+"""
 
 # Function to find the closest matching file
 def find_closest_file(directory, target_name):
@@ -45,8 +46,8 @@ if closest_file:
         print(f"Permission error: Unable to move {closest_file}. Make sure the file is not open in another program.")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-else:
-    print(f"Error: No matching audio file found for '{file_name}'.")
+#else:
+#    print(f"Error: No matching audio file found for '{file_name}'.")
 
 # Clear the video title after attempted move
 sharedVariables.set_video_title("")

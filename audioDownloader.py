@@ -3,6 +3,8 @@ import os
 import sys
 import re
 import sharedVariables
+from dotenv import load_dotenv
+from yt_dlp.utils import sanitize_filename
 
 def clean_title(title):
     # Remove text in parentheses and brackets
@@ -27,16 +29,17 @@ def clean_title(title):
 
     return title
 
-
-
-
 try:
     video_url = sys.argv[1]
 except IndexError:
     print("Error: Please provide a YouTube URL as a command-line argument.")
     sys.exit(1)
 
-output_directory = 'Z:\Music'
+load_dotenv()
+TARGET_DIRECTORY = os.getenv("TARGET_DIRECTORY")
+if TARGET_DIRECTORY is None:
+    raise RuntimeError("TARGET_DIRECTORY is not set (check your .env file).")
+output_directory = TARGET_DIRECTORY
 
 temp_filename_pattern = os.path.join(output_directory, '%(title)s_temp.%(ext)s')
 temp_output_extension = 'mp3'
@@ -62,20 +65,22 @@ ydl_opts = {
             'already_have_thumbnail': False
         },
     ],
-    # 'verbose': True
-    'quiet': True,
+    #'verbose': True
+    'quiet': False,
     'no_warnings': True,
+    "progress_with_newline": False,
+    "noprogress": False,
 }
 
 try:
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Download and Process the file (including thumbnail embedding)
+        # Download, Process the file and thumbnail
         info = ydl.extract_info(video_url, download=True)
 
         # Get the file's current path and the video's original title
         original_title = info.get('title', 'unknown')
 
-        # Robustly get the final file path after all post-processing
+        # Get the final file path after all post-processing
         current_filepath = None
         if info.get('requested_downloads'):
             current_filepath = info['requested_downloads'][0]['filepath']
@@ -83,12 +88,15 @@ try:
         if not current_filepath:
             raise Exception("yt-dlp failed to return a valid file path for renaming.")
 
-        # Apply your custom cleaning function
+        # Apply custom cleaning function
         cleaned_title = clean_title(original_title)
+        safe_title = sanitize_filename(cleaned_title, restricted=False)
 
         # Construct the new file path
         base_dir = os.path.dirname(current_filepath)
-        new_filepath = os.path.join(base_dir, f"{cleaned_title}.{temp_output_extension}")
+        new_filepath = os.path.join(base_dir, f"{safe_title}.{temp_output_extension}")
+        os.replace(current_filepath, new_filepath)
+
 
         # Rename the file and clean up temporary thumbnail files
         if os.path.exists(current_filepath):
@@ -100,8 +108,8 @@ try:
                  os.remove(temp_thumb_path)
 
              print(f"Download complete, renamed, and album art embedded: {cleaned_title}.{temp_output_extension}")
-        else:
-            print(f"Error: Final file not found at {current_filepath}")
+        #else:
+        #    print(f"Error: Final file not found at {current_filepath}")
 
 except Exception as e:
     print(f"An error occurred: {e}")
